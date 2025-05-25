@@ -1,5 +1,6 @@
 using AcademySystem.Data;
 using AcademySystem.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace AcademySystem;
 
@@ -7,34 +8,25 @@ public class SecondHelper
 {
      private static AppDbContext _db = new AppDbContext();
 
-     public static List<Student> GetStudents()
-     {
-         return _db.Students.ToList();
-     }
+     
 
      public static void ListStudents()
      {
-         // var students = GetStudents();
-         // foreach (var student in students)
-         // {
-         //     Console.WriteLine($"{student.Name} {student.Surname}");
-         // }
+         
          if (!_db.Students.Any())
          {
              _db.Students.AddRange(
-                 new Student { Name = "Sudenaz", Surname = "Öney" },
-                 new Student { Name = "Sümeyye", Surname = "Kosova" },
-                 new Student { Name = "Büşra", Surname = "Eşmen" }
+                 new Student { Name = "Sudenaz",  Surname = "Öney" },
+                 new Student { Name = "Sümeyye",  Surname = "Kosova" },
+                 new Student { Name = "Büşra",  Surname = "Esmer" }
              );
              _db.SaveChanges();
-             Console.WriteLine("Veritabanında öğrenci yoktu, veriler eklendi.");
          }
          else
          {
-             Console.WriteLine("Veritabanında zaten öğrenci verisi var:");
              foreach (var student in _db.Students.ToList())
              {
-                 Console.WriteLine($"Ad: {student.Name}, Soyad: {student.Surname}");
+                 Console.WriteLine($"{student.Id}- Ad: {student.Name}, Soyad: {student.Surname}");
              }
          }
      }
@@ -43,32 +35,42 @@ public class SecondHelper
     
     public static void ListTeachers()
     {
-        if (_db.Teachers.Any())
+        if (!_db.Teachers.Any())
         {
-            return;
+            _db.Teachers.AddRange(
+                new Teacher { Name = "Orhan",  Surname = "Ekici" },
+                new Teacher { Name = "Nihat",  Surname = "Duysak" },
+                new Teacher { Name = "Ozan Çağatay",  Surname = "Alıcı" }
+            );
+            _db.SaveChanges();
         }
-
-        _db.Teachers.AddRange(
-            new Teacher { Name = "Orhan", Surname = "Ekici" },
-            new Teacher { Name = "Nihat", Surname = "Duysak" },
-            new Teacher { Name = "Ozan Çağatay", Surname = "Alıcı" }
-        );
-        _db.SaveChanges();
+        else
+        {
+            foreach (var teacher in _db.Teachers.ToList())
+            {
+                Console.WriteLine($"{teacher.Id}- Ad: {teacher.Name}, Soyad: {teacher.Surname}");
+            }
+        }
     }     
     
     public static void ListClass()
     {
-        if (_db.Classrooms.Any())
+        if (!_db.Classrooms.Any())
         {
-            return;
+            _db.Classrooms.AddRange(
+                new Classroom { ClassName = "BE Focus" },
+                new Classroom { ClassName = "BE Flex"  },
+                new Classroom { ClassName = "FE Focus" }
+            );
+            _db.SaveChanges();
         }
-
-        _db.Classrooms.AddRange(
-            new Classroom{ ClassName = "BE Focu"},
-            new Classroom{ ClassName = "BE Flex"}
-        );
-        _db.SaveChanges();
-        Helper.ShowErrorMsg("Listelendi");
+        else
+        {
+            foreach (var classroom in _db.Classrooms.ToList())
+            {
+                Console.WriteLine($"{classroom.Id}- Sınıf: {classroom.ClassName}");
+            }
+        }
     }                 
 
     
@@ -135,7 +137,95 @@ public class SecondHelper
         
     }
 
-    
+    public static void ClassStudent()
+    {
+        ListStudents();
+        Console.WriteLine();
+        ListClass();
+        Console.WriteLine();
+        Console.Write("İşlem yapmak istediğiniz öğrenci:  ");
+        var studentId = int.Parse(Console.ReadLine());
+        
+        Console.Write("Öğrenciyi eklemek istediğiniz sınıf: ");
+        var classroomId = int.Parse(Console.ReadLine());
+        Thread.Sleep(200);
+        Console.WriteLine("Öğrenci sınıfa eklendi");
+        
+        var student = _db.Students
+            .Include(c => c.Classrooms)
+            .FirstOrDefault(s => s.Id == studentId);
+        var classroom = _db.Classrooms.Find(classroomId);
+        if (student != null && classroom != null != student.Classrooms.Contains(classroom))
+        {
+            student.Classrooms.Add(classroom);
+        }
+         _db.SaveChanges();
+    }
+
+    public static void ClassTeacher()
+    {
+        ListTeachers();
+        Console.WriteLine();
+        ListClass();
+        Console.WriteLine();
+        Console.Write("İşlem yapmak istediğiniz öğretmen:  ");
+        var teacherId = int.Parse(Console.ReadLine());
+        
+        Console.Write("Öğretmeni eklemek istediğiniz sınıf: ");
+        var classroomId = int.Parse(Console.ReadLine());
+        Thread.Sleep(200);
+        Console.WriteLine("Öğretmen sınıfa eklendi");
+        
+        var teacher = _db.Teachers
+            .Include(c => c.Classrooms)
+            .FirstOrDefault(s => s.Id == teacherId);
+        var classroom = _db.Classrooms.Find(classroomId);
+        if (teacher != null && classroom != null != teacher.Classrooms.Contains(classroom))
+        {
+            teacher.Classrooms.Add(classroom);
+        }
+        _db.SaveChanges();
+    }
+
+    public static void ClassStudentShow()
+    {
+        var classroomList = _db
+            .Classrooms
+            .Include(s => s.Students)
+            .ToList();
+
+        foreach (var classroom in classroomList)
+        {
+            Console.WriteLine($"{classroom.Id} - {classroom.ClassName}");
+            {
+                foreach (var student in classroom.Students)
+                {
+                    Console.WriteLine($"{student.Id} - {student.Name} {student.Surname}");
+                }
+                Console.WriteLine();
+            }
+        }
+    }
+
+    public static void ClassTeacherShow()
+    {
+        var classroomList = _db
+            .Classrooms
+            .Include(t => t.Teachers)
+            .ToList();
+
+        foreach (var classroom in classroomList)
+        {
+            Console.WriteLine($"{classroom.Id} - {classroom.ClassName}");
+            {
+                foreach (var teacher in classroom.Teachers)
+                {
+                    Console.WriteLine($"{teacher.Id} - {teacher.Name} {teacher.Surname}");
+                }
+                Console.WriteLine();
+            }
+        }
+    }
 
     
 }

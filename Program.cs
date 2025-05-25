@@ -20,7 +20,9 @@ class Program
     {
         var studentMenu = new ConsoleMenu("Öğrenci Yönetimi")
             .AddOption("Listele ", SecondHelper.ListStudents)
-            .AddOption("Ekle ", SecondHelper.AddStudent);
+            .AddOption("Ekle ", SecondHelper.AddStudent)
+            .AddOption("Sınıfa Ekle", SecondHelper.ClassStudent)
+            .AddOption("Sınıfları göster ", SecondHelper.ClassStudentShow);
         
         studentMenu.Show();
         
@@ -30,7 +32,9 @@ class Program
     {
         var teacherMenu = new ConsoleMenu("Öğretmen Yönetimi")
             .AddOption("Listele ", SecondHelper.ListTeachers)
-            .AddOption("Ekle ", SecondHelper.AddTeacher);
+            .AddOption("Ekle ", SecondHelper.AddTeacher)
+            .AddOption("Sınıfa Ekle", SecondHelper.ClassTeacher)
+            .AddOption("Sınıfları göster ", SecondHelper.ClassTeacherShow);
         teacherMenu.Show();
 
     }
@@ -43,5 +47,7 @@ class Program
         classMenu.Show();
         
     }
+    
+    
 
 }
